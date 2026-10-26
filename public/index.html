@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6bfd5">
+  <title>Mosaic · a place to think</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="masthead">
+    <a href="/" class="wordmark">mosaic<span> / a place to think</span></a>
+    <div class="header-actions"><span id="connection">Checking inference…</span><select id="sessions" aria-label="Saved inquiries"></select><button id="export">Export inquiry ↗</button><button id="new">New inquiry</button></div>
+  </header>
+  <main>
+    <section id="landing" aria-label="Start an inquiry">
+      <div class="origin-frame">
+        <p class="eyebrow">ONE QUESTION. ROOM TO UNFOLD.</p>
+        <h1>What are you<br>turning over?</h1>
+        <form id="start-form">
+          <label class="sr-only" for="question">Your opening question</label>
+          <textarea id="question" maxlength="6000" required placeholder="An idea, a tension, a question you haven’t settled…"></textarea>
+          <div class="entry-actions"><button type="button" class="voice" data-target="question">◉ Speak instead</button><button class="solid" type="submit">Begin an inquiry ↗</button></div>
+        </form>
+        <p class="origin-foot">Not a predetermined path. Each turn makes new material.<br>Keep what matters. Change your mind. Come back.</p>
+      </div>
+      <p class="caption">Start with the whole frame. The context unfolds as you think.</p>
+    </section>
+    <section id="inquiry" hidden>
+      <div class="inquiry-heading"><div><p class="eyebrow">THE QUESTION WE’RE HOLDING</p><h1 id="inquiry-title"></h1></div><button id="workspace-link">Working surface ↓</button></div>
+      <div class="desk">
+        <section class="exploration" aria-label="Inquiry landscape">
+          <div class="scene-toolbar"><nav id="motions" aria-label="Motion treatment"><button data-motion="pivot" aria-pressed="true">Pivot</button><button data-motion="shutter">Shutter</button><button data-motion="scale">Scale / fade</button><button data-motion="hybrid">Hybrid</button></nav><span id="scene-position"></span></div>
+          <div id="stage" aria-label="Turns, nested in their ancestry"><div id="world"></div></div>
+          <div class="dials">
+            <div class="dial-group"><button id="move-dial" class="knob" aria-label="Apply the selected inquiry move and generate a new turn">↗</button><label>Make a move<select id="move"></select></label></div>
+            <div class="dial-group right"><label>Change perspective<select id="lens"></select></label><button id="lens-dial" class="knob ring" aria-label="Advance the perspective and generate a new turn">↗</button></div>
+          </div>
+          <p class="caption">Dials ask for a new response. Recorded turns below only navigate. Text belongs to its pane—even when it turns.</p>
+          <nav id="history" aria-label="Recorded turns and branches"></nav>
+          <details id="request-record"><summary>Context used for this recorded turn</summary><pre id="record-context"></pre></details>
+        </section>
+        <aside id="board" aria-label="Persistent working surface">
+          <div class="board-heading"><h2>Working surface</h2><span id="piece-count">0 pieces</span></div>
+          <p class="caption">Select words in a pane to keep them here. Edit the expression, not its source.</p>
+          <section id="selection-tray" hidden aria-label="Selected passage"><p id="selection-text"></p><label class="nib-label">Marker nib <select id="nib"><option value="chisel">Broad chisel</option><option value="bullet">Rounded bullet</option><option value="fine">Fine point</option></select></label><button id="keep-selection" class="solid">Mark & keep ↓</button><button id="discuss-selection">Ask about it ↗</button></section>
+          <div id="pieces"></div>
+          <form id="note-form"><label for="note" class="small-label">Add a thought of your own</label><div class="note-entry"><textarea id="note" rows="2" placeholder="A note, a connection, an objection…"></textarea><button type="submit" aria-label="Keep your note">＋</button></div></form>
+          <section class="draft-section"><div class="board-heading"><label for="draft">A working formulation</label><button id="compose-draft">Append checked pieces ↓</button></div><textarea id="draft" rows="4" placeholder="Build something here. Nothing replaces this automatically."></textarea><p class="caption">Included in the next turn. Your editable composition—not an accepted conclusion.</p></section>
+          <form id="turn-form"><label for="interjection" class="small-label">Interject / redirect / continue</label><textarea id="interjection" maxlength="6000" rows="3" placeholder="What’s missing? What do you want to try?"></textarea><div class="entry-actions"><button type="button" class="voice" data-target="interjection">◉ Dictate</button><button type="submit" class="solid" id="submit-turn">Ask from here ↗</button><button type="button" id="cancel" hidden>Cancel request</button></div></form>
+          <details id="next-context"><summary>Inspect what the next turn will receive</summary><p class="caption">The question, up to eight ancestor turns, checked pieces, this draft, your interjection and the selected operation. Unrelated branches stay out.</p><p id="context-limits" class="caption"></p><pre id="context-preview"></pre></details>
+        </aside>
+      </div>
+    </section>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <footer><p>Experimental · browser-local record · no automatic actions · <span id="storage">saved on this browser</span></p><p id="voice-note">Optional dictation uses your browser’s speech service and may send audio to that provider. Review text before submitting.</p></footer>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+services:
+  mosaic:
+    command: npm start
+    port: 3153
+    health: /api/status
+    portal: true
