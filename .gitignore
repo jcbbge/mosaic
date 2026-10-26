@@ -1,0 +1,8 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.amp/*
+!.amp/services.yaml
+.data/
+coverage/

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Spatial motion lab</title>
+	<style>
+		:root { color-scheme: light; --ink: #222; --pink: #f6bfd5; }
+		* { box-sizing: border-box; }
+		body { margin: 0; background: white; color: var(--ink); font: 13px/1.5 system-ui, sans-serif; }
+		main { max-width: 1140px; margin: 32px auto; padding: 0 24px; }
+		header, nav, footer, .transport { display: flex; align-items: center; gap: 8px; }
+		header { justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+		h1 { margin: 0; font-size: 13px; font-weight: 500; }
+		nav { flex-wrap: wrap; }
+		button { font: inherit; color: inherit; background: white; border: 1px solid var(--ink); border-radius: 0; padding: 6px 12px; cursor: pointer; }
+		button[aria-pressed="true"] { background: var(--ink); color: white; }
+		button:disabled { opacity: .3; cursor: default; }
+		button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+		@media (hover: hover) { button:not(:disabled):hover { box-shadow: inset 0 0 0 1px var(--ink); } }
+		figure { margin: 24px 0 12px; }
+		svg { width: 100%; height: auto; display: block; overflow: visible; }
+		footer { flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+		.transport { flex-wrap: wrap; }
+		label { display: flex; align-items: center; gap: 10px; }
+		input { width: min(30vw, 300px); accent-color: var(--ink); cursor: ew-resize; }
+		output { min-width: 34px; font-variant-numeric: tabular-nums; }
+		p { margin: 16px 0 0; opacity: .65; font-size: 12px; }
+		@media (max-width: 600px) {
+			main { margin: 20px auto; padding: 0 16px; }
+			header { align-items: flex-start; flex-direction: column; }
+			button { padding: 7px 10px; }
+			label { width: 100%; }
+			input { flex: 1; width: 160px; }
+		}
+	</style>
+</head>
+<body>
+<main>
+	<header>
+		<h1>Spatial motion lab</h1>
+		<nav aria-label="Motion treatment">
+			<button type="button" data-mode="pivot" aria-pressed="true">Pivot</button>
+			<button type="button" data-mode="shutter" aria-pressed="false">Shutter</button>
+			<button type="button" data-mode="scale" aria-pressed="false">Scale / fade</button>
+			<button type="button" data-mode="hybrid" aria-pressed="false">Hybrid</button>
+		</nav>
+	</header>
+	<figure id="motion-study" aria-label="A shape-only spatial navigation experiment">
+		<svg viewBox="-36 -12 1072 753" role="img" aria-labelledby="scene-title scene-description">
+			<title id="scene-title">Pivot, position 1 of 7</title>
+			<desc id="scene-description">Black rectangular outlines on white, with a single pink innermost plane. Each forward step brings the right-hand region into the full frame. The left half remains the primary pane. Six steps end at the pink plane; backward steps return to the root.</desc>
+			<defs><clipPath id="frame-clip"><rect width="1000" height="675"/></clipPath></defs>
+			<g clip-path="url(#frame-clip)"><g id="planes"></g></g>
+			<rect width="1000" height="675" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+			<g fill="var(--ink)">
+				<circle cy="691" r="18"/>
+				<circle cx="1000" cy="691" r="18"/>
+				<circle cx="1000" cy="691" r="31" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+			</g>
+		</svg>
+	</figure>
+	<footer>
+		<div class="transport" aria-label="Navigation">
+			<button type="button" id="back" disabled>← Back</button>
+			<button type="button" id="next">Next →</button>
+			<button type="button" id="reset">Reset</button>
+		</div>
+		<label for="position">Position <input id="position" type="range" min="0" max="6" step="0.001" value="0" aria-valuetext="Position 1 of 7"><output id="readout" for="position">1 / 7</output></label>
+	</footer>
+	<p id="treatment-note">Quarter-turn rotation and reframing. Same shapes, six bounded steps. Use ← / →, or drag to scrub.</p>
+</main>
+<script>
+{
+	// A lab only: no Made Well store, product interface, dependencies, or network calls.
+	// Each rotated child exactly occupies its parent's right half. C² halves both axes,
+	// giving the alternating subdivisions in the sketches, down to one pink rectangle.
+	const W = 1000, H = 675, STEPS = 6;
+	const child = new DOMMatrix([0, H / W, -W / (2 * H), 0, W, 0]);
+	const frames = [new DOMMatrix()];
+	for (let i = 0; i < STEPS; i++) frames.push(frames[i].multiply(child));
+	const cameras = frames.map(frame => frame.inverse());
+	const state = { mode: 'pivot', position: 0, target: 0 };
+	const names = { pivot: 'Pivot', shutter: 'Shutter', scale: 'Scale / fade', hybrid: 'Hybrid' };
+	const notes = {
+		pivot: 'Quarter-turn rotation and reframing.',
+		shutter: 'Coordinated sliding planes; no rotation.',
+		scale: 'Outgoing and incoming frames change scale and crossfade.',
+		hybrid: 'A smaller slide and scale with fading outlines; the pink plane stays continuous.',
+	};
+	const planes = document.getElementById('planes');
+	const slider = document.getElementById('position');
+	const back = document.getElementById('back');
+	const next = document.getElementById('next');
+	const readout = document.getElementById('readout');
+	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+	let animation = 0;
+	const mix = (a, b, t) => a + (b - a) * t;
+	const clamp = value => Math.max(0, Math.min(STEPS, value));
+	const bounds = (matrix, width, height) => {
+		const corners = [[0, 0], [width, 0], [width, height], [0, height]].map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+		const x = Math.min(...corners.map(p => p.x)), y = Math.min(...corners.map(p => p.y));
+		return { x, y, width: Math.max(...corners.map(p => p.x)) - x, height: Math.max(...corners.map(p => p.y)) - y };
+	};
+	const cells = frames.map((frame, i) => bounds(frame, i === STEPS ? W : W / 2, H));
+	const rectangle = (box, i, opacity = 1) => `<rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" fill="${i === STEPS ? 'var(--pink)' : 'white'}" stroke="var(--ink)" stroke-width="2.5" vector-effect="non-scaling-stroke" opacity="${opacity}"/>`;
+	const cellAt = (i, depth) => {
+		const box = cells[i];
+		return bounds(cameras[depth].translate(box.x, box.y), box.width, box.height);
+	};
+	const scene = (depth, omitPink = false) => `<g transform="${cameras[depth]}">${cells.map((box, i) => omitPink && i === STEPS ? '' : rectangle(box, i)).join('')}</g>`;
+	const centered = (scale, dx = 0) => `translate(${W / 2 + dx} ${H / 2}) scale(${scale}) translate(${-W / 2} ${-H / 2})`;
+	const blendBox = (a, b, t) => Object.fromEntries(Object.keys(a).map(key => [key, mix(a[key], b[key], t)]));
+
+	function render() {
+		const depth = Math.min(Math.floor(state.position), STEPS - 1);
+		const t = state.position - depth;
+		if (state.mode === 'pivot') {
+			// Interpolated inverse-child camera: an exact quarter turn at each stop.
+			const turn = new DOMMatrix().translate(0, 2 * H * t).rotate(-90 * t).scale((2 * H / W) ** t, (W / H) ** t);
+			planes.innerHTML = `<g transform="${turn.multiply(cameras[depth])}">${cells.map((box, i) => rectangle(box, i)).join('')}</g>`;
+		} else if (state.mode === 'shutter') {
+			planes.innerHTML = cells.map((_, i) => rectangle(blendBox(cellAt(i, depth), cellAt(i, depth + 1), t), i)).join('');
+		} else if (state.mode === 'scale') {
+			planes.innerHTML = `<g opacity="${1 - t}" transform="${centered(mix(1, 1.3, t))}">${scene(depth)}</g><g opacity="${t}" transform="${centered(mix(.72, 1, t))}">${scene(depth + 1)}</g>`;
+		} else {
+			planes.innerHTML = `<g opacity="${1 - t}" transform="${centered(mix(1, 1.04, t), -60 * t)}">${scene(depth, true)}</g><g opacity="${t}" transform="${centered(mix(.92, 1, t), 60 * (1 - t))}">${scene(depth + 1, true)}</g>${rectangle(blendBox(cellAt(STEPS, depth), cellAt(STEPS, depth + 1), t), STEPS)}`;
+		}
+		slider.value = String(state.position);
+		const settled = Math.abs(state.position - Math.round(state.position)) < .001;
+		const position = settled ? String(Math.round(state.position) + 1) : (state.position + 1).toFixed(1);
+		readout.value = `${position} / ${STEPS + 1}`;
+		slider.setAttribute('aria-valuetext', `Position ${position} of ${STEPS + 1}`);
+		document.getElementById('scene-title').textContent = `${names[state.mode]}, position ${position} of ${STEPS + 1}`;
+		back.disabled = state.target <= 0;
+		next.disabled = state.target >= STEPS;
+	}
+	function stop() { cancelAnimationFrame(animation); }
+	function go(target) {
+		stop();
+		const from = state.position;
+		state.target = clamp(target);
+		const duration = reducedMotion.matches ? 0 : 720 * Math.abs(state.target - from);
+		const start = performance.now();
+		function tick(now) {
+			const elapsed = duration === 0 ? 1 : Math.min(1, (now - start) / duration);
+			const eased = (1 - Math.cos(Math.PI * elapsed)) / 2;
+			state.position = mix(from, state.target, eased);
+			render();
+			if (elapsed < 1) animation = requestAnimationFrame(tick);
+		}
+		animation = requestAnimationFrame(tick);
+	}
+	back.addEventListener('click', () => go(state.target - 1));
+	next.addEventListener('click', () => go(state.target + 1));
+	document.getElementById('reset').addEventListener('click', () => { stop(); state.position = state.target = 0; render(); });
+	slider.addEventListener('input', () => { stop(); state.position = state.target = Number(slider.value); render(); });
+	document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
+		stop();
+		state.position = state.target = Math.round(state.position);
+		state.mode = button.dataset.mode;
+		document.querySelectorAll('[data-mode]').forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+		document.getElementById('treatment-note').textContent = `${notes[state.mode]} Same shapes, six bounded steps. Use ← / →, or drag to scrub.`;
+		render();
+	}));
+	document.addEventListener('keydown', event => {
+		if (event.target instanceof HTMLInputElement || event.altKey || event.ctrlKey || event.metaKey) return;
+		if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+		event.preventDefault();
+		go(event.key === 'Home' ? 0 : event.key === 'End' ? STEPS : state.target + (event.key === 'ArrowLeft' ? -1 : 1));
+	});
+	render();
+}
+</script>
+</body>
+</html>

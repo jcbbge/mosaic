@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Six ways into a thought · Spatial lab</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+	<header class="masthead">
+		<a class="wordmark" href="#weights">Spatial lab <span>/ six encounters</span></a>
+		<span class="lab-note">Working studies, not finished products</span>
+	</header>
+	<nav id="studies" aria-label="Application studies"></nav>
+	<section class="heading">
+		<div><p class="eyebrow" id="study-kind"></p><h1 id="study-title"></h1></div>
+		<p id="study-question"></p>
+	</section>
+	<div class="toolbar">
+		<nav id="modes" aria-label="Motion treatment">
+			<button data-mode="pivot" aria-pressed="true">Pivot</button>
+			<button data-mode="shutter" aria-pressed="false">Shutter</button>
+			<button data-mode="scale" aria-pressed="false">Scale / fade</button>
+			<button data-mode="hybrid" aria-pressed="false">Hybrid</button>
+		</nav>
+		<button id="overview">Return to overview</button>
+	</div>
+	<nav id="trail" aria-label="Branch path"></nav>
+	<section id="stage" aria-label="Spatial exploration" aria-busy="false">
+		<svg id="geometry" viewBox="0 0 1000 675" preserveAspectRatio="none" aria-hidden="true">
+			<defs><clipPath id="frame"><rect width="1000" height="675"/></clipPath></defs>
+			<g clip-path="url(#frame)"><g id="planes"></g></g>
+			<rect width="1000" height="675" fill="none" stroke="var(--ink)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+		</svg>
+		<div id="zones" aria-label="Bring a region into focus"></div>
+		<article id="reader" tabindex="-1" aria-labelledby="node-title">
+			<div class="reader-top"><span id="node-number"></span><span id="lens-tag"></span></div>
+			<h2 id="node-title"></h2>
+			<div id="node-copy"></div>
+			<div id="node-extra"></div>
+		</article>
+	</section>
+	<div class="mechanisms">
+		<div class="mechanism">
+			<button id="spatial-knob" class="knob" aria-label="Turn spatial dial forward" title="Next region"><span aria-hidden="true">↗</span></button>
+			<div><span class="control-label">Explore</span><div class="control-row"><button id="back">←</button><output id="position"></output><button id="next">→</button></div></div>
+		</div>
+		<div class="mechanism interpretation">
+			<div><span class="control-label">Interpret</span><div class="control-row"><button id="lens-back" aria-label="Previous interpretation">←</button><output id="lens-name"></output><button id="lens-next" aria-label="Next interpretation">→</button></div></div>
+			<button id="lens-knob" class="knob ring" aria-label="Turn interpretation dial" title="Next interpretation"><span aria-hidden="true">↗</span></button>
+		</div>
+	</div>
+	<nav id="map" aria-label="All regions in this sequence"></nav>
+	<div id="workspace"></div>
+	<footer>
+		<p id="study-note"></p>
+		<p>Click a region to focus it. ← / → explores; [ / ] changes the lens. At the final region, the pink anchor fills the frame.</p>
+		<p id="storage-note">Prewritten material. No live model, external integrations, or automatic actions. Your inputs stay in this browser; export them before clearing browser data.</p>
+		<div class="footer-actions"><button id="export">Export this study</button><button id="clear">Clear my inputs for this study</button></div>
+		<p id="message" role="status" aria-live="polite"></p>
+	</footer>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
