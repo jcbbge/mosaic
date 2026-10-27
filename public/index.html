@@ -1,60 +1,68 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6bfd5">
-  <title>Mosaic · a place to think</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6bfd5"><title>Mosaic · a place to think</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="masthead">
-    <a href="/" class="wordmark">mosaic<span> / a place to think</span></a>
-    <div class="header-actions"><span id="connection">Checking inference…</span><select id="sessions" aria-label="Saved inquiries"></select><button id="export">Export inquiry ↗</button><button id="new">New inquiry</button></div>
+    <span class="wordmark">mosaic</span>
+    <div class="header-actions">
+      <select id="motion" aria-label="Transition"><option value="pivot">Pivot</option><option value="shutter">Shutter</option></select>
+      <select id="theme" aria-label="Desktop theme"><option value="pink">Pink</option><option value="blueprint">Blueprint</option><option value="dots">Dot grid</option><option value="graph">Graph</option></select>
+      <button id="board-view" aria-pressed="false">Full board ↗</button><button id="tools-link" aria-label="Options">···</button>
+    </div>
   </header>
   <main>
-    <section id="landing" aria-label="Start an inquiry">
-      <div class="origin-frame">
-        <p class="eyebrow">ONE QUESTION. ROOM TO UNFOLD.</p>
-        <h1>What are you<br>turning over?</h1>
-        <form id="start-form">
-          <label class="sr-only" for="question">Your opening question</label>
-          <textarea id="question" maxlength="6000" required placeholder="An idea, a tension, a question you haven’t settled…"></textarea>
-          <div class="entry-actions"><button type="button" class="voice" data-target="question">◉ Speak instead</button><button class="solid" type="submit">Begin an inquiry ↗</button></div>
+    <div id="stage" tabindex="0" aria-label="Mosaic working board. Right-click or press Space for tools."><div id="world"></div></div>
+    <input id="image-file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+    <nav id="camera-controls" aria-label="Board camera" hidden>
+      <button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">＋</button>
+      <button id="rotate-left" aria-label="Rotate view left">↶</button><button id="rotate-right" aria-label="Rotate view right">↷</button><button id="fit">Fit</button>
+    </nav>
+    <nav class="navigation-dock" aria-label="Sheets and conversation">
+      <button id="previous-sheet" class="knob" aria-label="Previous sheet" title="Previous sheet">←</button>
+      <span id="sheet-label"></span><button id="chat-toggle" aria-expanded="false">Conversation <span id="turn-count"></span></button>
+      <button id="next-sheet" class="knob" aria-label="Next sheet" title="Next sheet">→</button>
+    </nav>
+    <button id="intent-hint">Right-click or Space to create</button>
+    <button id="finish-drawing" hidden>✓ Done drawing</button>
+    <div id="intent" popover="auto" aria-label="Create here">
+      <div id="intent-actions">
+        <button id="write"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5Z"/></svg><span>Talk</span></button>
+        <button id="highlight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 14 8-10 5 4-8 10-5-4Zm0 0-2 5 5-2M3 22h12"/></svg><span>Highlight</span></button>
+        <button id="add-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v12l-6 6H4V3Zm10 18v-6h6M8 8h8M8 12h5"/></svg><span>Note</span></button>
+        <button id="draw" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4L8 20H4v-4Zm9-9 4 4M3 23h18"/></svg><span>Draw</span></button>
+        <button id="upload"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3V3Zm0 13h18M6 13l4-5 3 3 2-2 3 4"/></svg><span>Image</span></button>
+        <button id="add-comment"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16v14H9l-5 4V3Zm4 5h8M8 12h5"/></svg><span>Comment</span></button>
+        <button class="intent-dismiss" popovertarget="intent" popovertargetaction="hide" aria-label="Close tools">×</button>
+      </div>
+      <div id="conversation" hidden>
+        <div class="conversation-heading"><button id="intent-back" aria-label="Back to tools">←</button><span>Conversation</span><button popovertarget="intent" popovertargetaction="hide" aria-label="Close conversation">×</button></div>
+        <div class="highlight-tools"><label for="nib">Marker</label><select id="nib" aria-label="Highlighter nib"><option value="chisel">Chisel</option><option value="bullet">Bullet</option><option value="fine">Fine</option></select><span>Select words, then Highlight</span></div>
+        <section id="transcript" aria-label="Conversation" hidden></section>
+        <form id="turn-form">
+          <label class="sr-only" for="interjection">Your thought</label><textarea id="interjection" rows="1" maxlength="6000" placeholder="Think out loud…"></textarea>
+          <button type="button" id="voice" aria-label="Dictate your thought" title="Dictate"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></button><button type="submit" id="send" aria-label="Send thought">↑</button><button type="button" id="cancel" hidden>Stop</button>
         </form>
-        <p class="origin-foot">Not a predetermined path. Each turn makes new material.<br>Keep what matters. Change your mind. Come back.</p>
       </div>
-      <p class="caption">Start with the whole frame. The context unfolds as you think.</p>
-    </section>
-    <section id="inquiry" hidden>
-      <div class="inquiry-heading"><div><p class="eyebrow">THE QUESTION WE’RE HOLDING</p><h1 id="inquiry-title"></h1></div><button id="workspace-link">Working surface ↓</button></div>
-      <div class="desk">
-        <section class="exploration" aria-label="Inquiry landscape">
-          <div class="scene-toolbar"><nav id="motions" aria-label="Motion treatment"><button data-motion="pivot" aria-pressed="true">Pivot</button><button data-motion="shutter">Shutter</button><button data-motion="scale">Scale / fade</button><button data-motion="hybrid">Hybrid</button></nav><span id="scene-position"></span></div>
-          <div id="stage" aria-label="Turns, nested in their ancestry"><div id="world"></div></div>
-          <div class="dials">
-            <div class="dial-group"><button id="move-dial" class="knob" aria-label="Apply the selected inquiry move and generate a new turn">↗</button><label>Make a move<select id="move"></select></label></div>
-            <div class="dial-group right"><label>Change perspective<select id="lens"></select></label><button id="lens-dial" class="knob ring" aria-label="Advance the perspective and generate a new turn">↗</button></div>
-          </div>
-          <p class="caption">Dials ask for a new response. Recorded turns below only navigate. Text belongs to its pane—even when it turns.</p>
-          <nav id="history" aria-label="Recorded turns and branches"></nav>
-          <details id="request-record"><summary>Context used for this recorded turn</summary><pre id="record-context"></pre></details>
-        </section>
-        <aside id="board" aria-label="Persistent working surface">
-          <div class="board-heading"><h2>Working surface</h2><span id="piece-count">0 pieces</span></div>
-          <p class="caption">Select words in a pane to keep them here. Edit the expression, not its source.</p>
-          <section id="selection-tray" hidden aria-label="Selected passage"><p id="selection-text"></p><label class="nib-label">Marker nib <select id="nib"><option value="chisel">Broad chisel</option><option value="bullet">Rounded bullet</option><option value="fine">Fine point</option></select></label><button id="keep-selection" class="solid">Mark & keep ↓</button><button id="discuss-selection">Ask about it ↗</button></section>
-          <div id="pieces"></div>
-          <form id="note-form"><label for="note" class="small-label">Add a thought of your own</label><div class="note-entry"><textarea id="note" rows="2" placeholder="A note, a connection, an objection…"></textarea><button type="submit" aria-label="Keep your note">＋</button></div></form>
-          <section class="draft-section"><div class="board-heading"><label for="draft">A working formulation</label><button id="compose-draft">Append checked pieces ↓</button></div><textarea id="draft" rows="4" placeholder="Build something here. Nothing replaces this automatically."></textarea><p class="caption">Included in the next turn. Your editable composition—not an accepted conclusion.</p></section>
-          <form id="turn-form"><label for="interjection" class="small-label">Interject / redirect / continue</label><textarea id="interjection" maxlength="6000" rows="3" placeholder="What’s missing? What do you want to try?"></textarea><div class="entry-actions"><button type="button" class="voice" data-target="interjection">◉ Dictate</button><button type="submit" class="solid" id="submit-turn">Ask from here ↗</button><button type="button" id="cancel" hidden>Cancel request</button></div></form>
-          <details id="next-context"><summary>Inspect what the next turn will receive</summary><p class="caption">The question, up to eight ancestor turns, checked pieces, this draft, your interjection and the selected operation. Unrelated branches stay out.</p><p id="context-limits" class="caption"></p><pre id="context-preview"></pre></details>
-        </aside>
-      </div>
-    </section>
+    </div>
     <div id="notice" role="status" aria-live="polite"></div>
-    <footer><p>Experimental · browser-local record · no automatic actions · <span id="storage">saved on this browser</span></p><p id="voice-note">Optional dictation uses your browser’s speech service and may send audio to that provider. Review text before submitting.</p></footer>
   </main>
+  <dialog id="unfold-dialog" aria-labelledby="unfold-title">
+    <div class="dialog-heading"><h2 id="unfold-title">Another face of the thought</h2><button data-close="unfold-dialog" aria-label="Close">×</button></div>
+    <form id="unfold-form"><label for="skill">Start with</label><select id="skill"><option value="">An open sheet · no inference</option><option value="critical">Criticality</option><option value="ablate">Ablation</option><option value="luck">Luck</option><option value="connect">A connection</option></select><p class="caption">Your conversation continues. A lens offers a contribution, not a questionnaire.</p><button class="solid" type="submit">Unfold ↗</button></form>
+  </dialog>
+  <dialog id="perspective-dialog" aria-labelledby="perspective-title"><div class="dialog-heading"><h2 id="perspective-title">Next message’s perspective</h2><button data-close="perspective-dialog" aria-label="Close">×</button></div><select id="lens" aria-label="Perspective"></select><p class="caption">Changes the lens, not the sheet. Nothing is sent until you send a message.</p></dialog>
+  <dialog id="tools" aria-labelledby="tools-title">
+    <div class="dialog-heading"><h2 id="tools-title">Mosaic</h2><button data-close="tools" aria-label="Close options">×</button></div>
+    <p class="caption">Saved in this browser, not yet a multiplayer workspace. Images use their captions in inference; drawings use your description. The originals stay on the board.</p>
+    <label for="sessions">Saved Mosaics</label><select id="sessions"></select><div class="actions"><button id="new">New Mosaic</button><button id="export">Export</button></div>
+    <div class="actions"><button id="unfold">Unfold with a thinking lens…</button><button id="perspective">Perspective…</button></div>
+    <details><summary>Context sent with the next message</summary><pre id="context-preview"></pre><p class="caption">Up to 8 recent exchanges and 16 included artifacts. Full originals remain in your browser and export.</p></details>
+    <p id="storage" class="caption">Saved in this browser</p><p id="connection" class="caption"></p><p class="caption">Dictation uses your browser’s speech service. Review before sending.</p>
+  </dialog>
   <script type="module" src="/app.js"></script>
 </body>
 </html>
